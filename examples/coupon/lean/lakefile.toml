@@ -1,0 +1,9 @@
+name = "coupon"
+defaultTargets = ["oracle"]
+
+[[lean_lib]]
+name = "CouponModel"
+
+[[lean_exe]]
+name = "oracle"
+root = "Main"

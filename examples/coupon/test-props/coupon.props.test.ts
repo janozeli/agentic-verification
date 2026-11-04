@@ -2,49 +2,11 @@
 // generated inputs, plus one test that compares against the model itself.
 import fc from "fast-check";
 import { describe, expect, it } from "vitest";
-import { applyCoupon, subtotal, type Coupon, type Item } from "../src/coupon";
+import { applyCoupon, subtotal } from "../src/coupon";
 import { modelApplyCoupon } from "../spec/model";
+import { cart, items, seed } from "./arbitraries";
 
-fc.configureGlobal({ seed: Number(process.env.SEED ?? 42), numRuns: 300 });
-
-const item: fc.Arbitrary<Item> = fc.record({
-  priceCents: fc.integer({ min: 0, max: 10_000 }),
-  quantity: fc.integer({ min: 0, max: 5 }),
-});
-const items = fc.array(item, { maxLength: 5 });
-
-// Minimums near the subtotal on purpose: boundaries are where rules break.
-// MINIMUM=uniform turns the bias off (see experiments/generators.sh).
-const minimum = (sub: number) =>
-  fc.option(
-    process.env.MINIMUM === "uniform"
-      ? fc.integer({ min: 0, max: 60_000 })
-      : fc.oneof(
-          fc.constant(sub),
-          fc.constant(sub + 1),
-          fc.constant(Math.max(0, sub - 1)),
-          fc.integer({ min: 0, max: 60_000 }),
-        ),
-    { nil: undefined },
-  );
-
-const coupon = (sub: number): fc.Arbitrary<Coupon> =>
-  fc.oneof(
-    fc.record({
-      kind: fc.constant("percent" as const),
-      percent: fc.integer({ min: -50, max: 150 }),
-      minSubtotalCents: minimum(sub),
-    }),
-    fc.record({
-      kind: fc.constant("fixed" as const),
-      amountCents: fc.integer({ min: 0, max: 60_000 }),
-      minSubtotalCents: minimum(sub),
-    }),
-  );
-
-const cart = items.chain((its) =>
-  fc.tuple(fc.constant(its), fc.option(coupon(subtotal(its)), { nil: undefined })),
-);
+fc.configureGlobal({ seed, numRuns: 300 });
 
 describe("oracle", () => {
   it("matches the verified model", () => {

@@ -1,0 +1,23 @@
+{
+  "$schema": "../../node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+  "testRunner": "vitest",
+  "vitest": {
+    "configFile": "vitest.lean.config.ts"
+  },
+  "coverageAnalysis": "perTest",
+  "disableBail": true,
+  "mutate": [
+    "src/**/*.ts"
+  ],
+  "reporters": [
+    "json",
+    "clear-text"
+  ],
+  "jsonReporter": {
+    "fileName": "reports/mutation-lean.json"
+  },
+  "tempDirName": ".stryker-tmp",
+  "ignorePatterns": [
+    "lean"
+  ]
+}

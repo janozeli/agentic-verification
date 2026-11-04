@@ -23,7 +23,8 @@ written as whole alternative implementations.
 | ↳ pruned on Stryker mutants only | 4 | 25 / 27 | 3 / 9 |
 | ↳ pruned on Stryker + semantic mutants | 5 | 25 / 27 | 5 / 9 |
 | Properties (the model's rules) | 4 | 22 / 27 | 7 / 9 |
-| Oracle (verified Dafny model) | 1 | 26 / 27 | 9 / 9 |
+| Oracle (verified Dafny model, in process) | 1 | 26 / 27 | 9 / 9 |
+| Oracle (verified Lean model, external process) | 1 | 26 / 27 | 9 / 9 |
 
 - 26 of the 31 example tests can go without losing anything either kind of
   mutant detects. Four of them reject nothing at all.
@@ -32,6 +33,9 @@ written as whole alternative implementations.
 - One differential test against a verified model catches everything that can
   be caught, but only because its inputs are aimed at the boundary the model
   proves. With uniform inputs it misses that bug in 10 of 10 seeds.
+- The model's language barely matters. A Dafny model compiled to JavaScript
+  and a Lean model run as a separate process, one JSON line per case, give the
+  same results, and the two models agree with each other.
 
 Redemption example: a coupon with limited uses under concurrent checkouts,
 model-checked with TLC, with each counterexample replayed as a Vitest test.
@@ -46,7 +50,7 @@ model-checked with TLC, with each counterexample replayed as a Vitest test.
 
 ```
 src/                 the pruner: Stryker report (+ semantic mutants) in, verdicts or deletions out
-examples/coupon/     function, agent-style suite, properties, semantic mutants, Dafny model
+examples/coupon/     function, agent-style suite, properties, semantic mutants, Dafny and Lean models
 examples/redemption/ TLA+ spec, TypeScript implementations, replayed counterexamples
 experiments/         scripts that produce experiments/results/
 ```
@@ -54,11 +58,12 @@ experiments/         scripts that produce experiments/results/
 ## Running
 
 Tools are pinned with [mise](https://mise.jdx.dev): Bun for scripts, Node for
-Vitest and Stryker.
+Vitest and Stryker, elan for Lean (the toolchain itself is pinned in
+`examples/coupon/lean/lean-toolchain`).
 
 ```sh
 mise install && bun install
-mise run test     # type-check and all suites
+mise run test     # build the Lean oracle, type-check, run all suites
 mise run study    # needs Java; regenerates experiments/results/
 mise run prune    # pruner verdicts on the example suite (after the study)
 mise run model    # re-verify and recompile the Dafny model (needs Dafny 4.11 and Z3 4.12.1)

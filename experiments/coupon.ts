@@ -41,6 +41,7 @@ const union = (m: Map<string, Set<string>>, ids: string[]) => new Set(ids.flatMa
 
 const examples = load("reports/mutation.json", "reports/semantic.json");
 const props = load("reports/mutation-props.json", "reports/semantic-props.json");
+const lean = load("reports/mutation-lean.json", "reports/semantic-lean.json");
 
 const merged = (s: Suite) =>
   new Map(s.tests.map((t) => [t.id, new Set([...s.syntactic.get(t.id)!, ...s.semantic.get(t.id)!])]));
@@ -52,7 +53,8 @@ const rows: [string, Suite, string[]][] = [
   ["  pruned on Stryker mutants only", examples, cover(examples.syntactic, allIds(examples))],
   ["  pruned on Stryker + semantic mutants", examples, cover(merged(examples), allIds(examples))],
   ["Properties (the model's rules)", props, byPrefix(props, "rules")],
-  ["Oracle (verified Dafny model)", props, byPrefix(props, "oracle")],
+  ["Oracle (verified Dafny model, in process)", props, byPrefix(props, "oracle")],
+  ["Oracle (verified Lean model, external process)", lean, byPrefix(lean, "oracle")],
   ["Properties + oracle", props, allIds(props)],
 ];
 
@@ -72,7 +74,11 @@ const lostByStrykerOnly = examples.semanticIds.filter(
     !union(examples.semantic, cover(examples.syntactic, allIds(examples))).has(id),
 );
 
-md += `\nLines of test code: examples ${lines("test/coupon.test.ts")}, properties + oracle ${lines("test-props/coupon.props.test.ts")}.\n`;
+md += `\nLines of test code: examples ${lines("test/coupon.test.ts")}, ` +
+  `properties + Dafny oracle ${lines("test-props/coupon.props.test.ts") + lines("test-props/arbitraries.ts")} (generators included), ` +
+  `Lean oracle ${lines("test-lean/coupon.lean.test.ts")} (reusing the generators).\n`;
+md += `\nTests that check the models rather than the code, and so kill nothing: ` +
+  `${lean.tests.filter((t) => t.name.startsWith("models")).map((t) => `"${t.name}"`).join(", ")}.\n`;
 md += `\nStryker survivors, examples: ${examples.survivors.map((s) => `\`${s}\``).join("; ")}.\n`;
 md += `Stryker survivors, properties + oracle: ${props.survivors.map((s) => `\`${s}\``).join("; ")}.\n`;
 md += `\nSemantic mutants the full example suite catches but the Stryker-only pruning loses: ${lostByStrykerOnly.map(short).join(", ") || "none"}.\n`;

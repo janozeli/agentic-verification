@@ -9,7 +9,8 @@
    capture the mistakes that matter, or do we need mutants that encode
    misunderstandings of the domain?
 3. Can a formally verified model act as the oracle for ordinary tests, so that
-   people and agents only ever see native code and native failures?
+   people and agents only ever see native code and native failures? Does it
+   matter which formal language, or whether the model runs in process?
 4. For behavior over time (concurrency, promises), can a model checker's
    counterexamples come back as native tests?
 
@@ -25,6 +26,8 @@ percent clamping and rounding down. Three suites exercise it:
 - `test-props/`, rules: 4 fast-check properties stating the rules.
 - `test-props/`, oracle: 1 property comparing the implementation with a
   Dafny model on generated inputs.
+- `test-lean/`, oracle: the same comparison against a Lean model running as a
+  separate process.
 
 Two kinds of wrong implementations:
 
@@ -44,13 +47,18 @@ bigger percentage never costs more. It compiles to JavaScript
 between the TypeScript types and the model's (union types to tags, `number`
 to unbounded integers).
 
+The Lean model (`lean/CouponModel.lean`) was written separately and proves
+the same six rules. `lean/Main.lean` turns it into a Unix filter: one JSON
+case per line on stdin, one result per line on stdout. The TypeScript side
+(`spec/lean.ts`) sends all generated cases through a single pipe.
+
 **Redemption** (`examples/redemption`). A coupon with a use limit, redeemed by
 concurrent checkouts. `spec/Redemption.tla` models three designs; three
 TypeScript functions implement them.
 
 **Determinism.** Stryker runs with per-test coverage and without bailing, so
 every test that kills a mutant is recorded. fast-check runs with fixed seeds.
-The Dafny output is byte-for-byte reproducible. CI re-runs the study and fails
+The Dafny output is byte-for-byte reproducible. The Lean toolchain is pinned. CI re-runs the study and fails
 if `experiments/results/` changes.
 
 ## Findings
@@ -88,8 +96,8 @@ model, and committed. The judge that runs them stays deterministic.
 
 The 31 examples miss 4 of 9 misunderstandings, among them the inclusive
 minimum, which Stryker also flags as a surviving `<=`. The 4 rule properties catch 7 of 9,
-and the whole property file, oracle included, is about a third shorter (101 lines
-against 147). The two they miss are both about fixed coupons,
+and the property suite, oracle and generators included, is about a quarter
+shorter (107 lines against 147). The two they miss are both about fixed coupons,
 because none of the rules mentions fixed coupons. Properties are only as
 complete as the rules someone thought to write.
 
@@ -114,7 +122,25 @@ Two caveats came out of the experiment:
   catches it then. The lemma `MinimumIsInclusive` points at that boundary, so
   the proof also tells you where to aim the inputs.
 
-### 5. Counterexamples come back as native tests
+### 5. The formal language barely matters; the process boundary does a little
+
+The Lean oracle gives exactly the same numbers as the Dafny one: 26 of 27
+Stryker mutants and 9 of 9 semantic mutants. The two models, written
+separately in different languages, agree on all 300 generated cases. That
+agreement is a check on the specifications themselves, not on the code, so
+the pruner correctly reports the test that runs it as killing nothing.
+
+Running the model as a process is cheap: about 50 ms for a batch of 300
+cases, with a 118 MB binary because it links the Lean runtime. What the
+boundary costs is shrinking. fast-check shrinks a failing case by calling the
+oracle again and again; with a batch, the test can only report the smallest
+mismatching case it already has. Per-case process calls would restore
+shrinking at the price of speed.
+
+The protocol is what makes the language interchangeable. The Lean side is a
+40-line filter; any language that reads and writes lines could take its place.
+
+### 6. Counterexamples come back as native tests
 
 TLC checks each redemption design in under a hundred distinct states:
 
@@ -149,8 +175,9 @@ Automating it is open.
   rules out) is measurable, but only against a sample. Semantic mutants are
   the cheapest way found here to bring intent into that sample.
 - **A translation layer around formal tools is viable** for pure functions
-  with simple data. Nobody using the coupon suite needs to read Dafny; a
-  failure is an ordinary Vitest diff with a shrunk input.
+  with simple data. Nobody using the coupon suite needs to read Dafny or
+  Lean; a failure is an ordinary Vitest diff with a small input. Behind a
+  line-oriented protocol, the formal language is a replaceable part.
 - **Specification cannot be avoided, only moved.** Every gain in this study
   came from someone stating what correct means: rules, a model, mutants,
   a TLA+ property. The tools only make that statement checkable.
@@ -161,7 +188,7 @@ Automating it is open.
   approach scales to glue code, I/O or a real codebase.
 - The agent-style suite was written to imitate agent output; it was not
   sampled from real agent runs.
-- The semantic mutants, the rules and the model were written by the same
+- The semantic mutants, the rules and both models were written by the same
   author, an AI coding agent, in the same session. Blind spots may be shared.
   The fixed-coupon gap in the rules is one that surfaced; others may not have.
 - Greedy set cover is not guaranteed minimal.
