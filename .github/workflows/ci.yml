@@ -1,0 +1,41 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
+      - run: bun install --frozen-lockfile
+      - run: mise run test
+
+  study:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "21" }
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: "8.0.x" }
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: Install Dafny and Z3
+        run: |
+          dotnet tool install --global dafny --version 4.11.0
+          echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
+          python -m pip install z3-solver==4.12.1.0
+      - run: bun install --frozen-lockfile
+      - name: Verify the Dafny model and check the committed JavaScript is current
+        run: |
+          mise run model
+          git diff --exit-code examples/coupon/spec/model.cjs
+      - run: mise run study
+      - name: Results match the committed ones
+        run: git diff --exit-code experiments/results

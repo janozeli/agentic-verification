@@ -1,0 +1,49 @@
+[tools]
+bun = "1.4"
+node = "22"
+
+[env]
+_.path = ["{{config_root}}/node_modules/.bin"]
+
+[tasks.test]
+description = "Type-check, then run every suite (the tool's tests and both examples)"
+run = ["bun run typecheck", "bun run test"]
+
+[tasks.model]
+description = "Verify the Dafny model and compile it to JavaScript (needs dafny and z3 on PATH)"
+dir = "examples/coupon/spec"
+run = """
+dafny translate js --include-runtime --output model coupon.dfy
+mv model.js model.cjs
+printf '\\nmodule.exports = { _dafny, CouponModel };\\n' >> model.cjs
+rm -f model-js.dtr
+"""
+
+[tasks."study:coupon"]
+description = "Mutation, semantic mutants and pruning on the coupon example"
+run = """
+cd examples/coupon
+stryker run
+stryker run stryker.props.json
+cd ../..
+bun src/semantic.ts examples/coupon examples/coupon/mutants vitest.config.ts > examples/coupon/reports/semantic.json
+bun src/semantic.ts examples/coupon examples/coupon/mutants vitest.props.config.ts > examples/coupon/reports/semantic-props.json
+bun experiments/coupon.ts
+"""
+
+[tasks."study:redemption"]
+description = "Model-check the redemption designs with TLC (needs Java)"
+run = "./experiments/redemption.sh"
+
+[tasks."study:generators"]
+description = "Oracle vs boundary bug, with biased and uniform input generation"
+run = "./experiments/generators.sh"
+
+[tasks.study]
+description = "Run the whole study"
+depends = ["study:coupon", "study:generators", "study:redemption"]
+
+[tasks.prune]
+description = "Show what the pruner says about the example suite (after study:coupon)"
+dir = "examples/coupon"
+run = "bun ../../src/cli.ts reports/mutation.json --semantic reports/semantic.json"

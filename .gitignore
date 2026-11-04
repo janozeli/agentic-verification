@@ -1,0 +1,6 @@
+node_modules/
+.stryker-tmp/
+reports/
+.tools/
+*.dtr
+*_TTrace_*

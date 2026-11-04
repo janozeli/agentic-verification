@@ -1,0 +1,21 @@
+{
+  "name": "agentic-verification",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "prune": "bun src/cli.ts",
+    "semantic": "bun src/semantic.ts",
+    "typecheck": "tsc -p ."
+  },
+  "devDependencies": {
+    "@stryker-mutator/core": "^10.1.1",
+    "@stryker-mutator/vitest-runner": "^10.1.1",
+    "@types/bun": "^1.4.4",
+    "@types/node": "^26.6.6",
+    "bignumber.js": "^11.1.5",
+    "fast-check": "^4.10.2",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  }
+}
