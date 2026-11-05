@@ -250,6 +250,39 @@ mutants of both kinds as the full suite.
   defu's keeps 21 where 12 would do, and scule's human suite 46 where 11
   would do.
 
+### 9. Pruning keeps fault coverage and loses case coverage
+
+Pruning was measured against faults: the pruned suite rejects the same
+mutants. A stricter question is whether it still checks the same cases,
+every input-to-output pair the full suite checks
+(`experiments/results/cases.md`).
+
+The measure: record every call each test makes to the library; then, for
+each removed test, run both suites against an implementation that is exact
+except on that test's calls, where it returns a wrong result. The full suite
+must fail (otherwise the perturbation is not observable). If the pruned
+suite passes, the removed test's cases are no longer checked.
+
+| Library | Suite | Tests removed | Perturbation observable | Cases still checked | Cases lost |
+|---|---|---:|---:|---:|---:|
+| scule | human | 17 | 14 | 0 | 14 |
+| scule | agent | 330 | 295 | 22 | 273 |
+| defu | human | 15 | 14 | 2 | 12 |
+| defu | agent | 204 | 176 | 2 | 174 |
+| destr | human | 2 | 2 | 0 | 2 |
+| destr | agent | 277 | 255 | 13 | 242 |
+
+About 95% of the observable cases of removed tests are no longer checked
+by anything. This is close to inevitable: a test is usually the only one
+that uses its exact inputs, so removing it removes its cases, and mutants
+only show that those cases added no rejection power over the sample.
+
+"Coverage" therefore needs a definition before a suite can shrink without
+losing it. Fault coverage survives pruning; case coverage does not. Keeping
+both means compressing rather than deleting: folding redundant tests into
+rows of the tests that stay, so the cases remain as data while the test
+code shrinks.
+
 ## What this says about the ideas
 
 - **Tests as predicates over implementations** works as a basis: vacuity,

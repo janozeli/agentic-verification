@@ -61,6 +61,10 @@ run = "bun experiments/boundaries.ts"
 description = "Real libraries: human vs agent-written suites, Stryker and semantic mutants (runs third-party code offline)"
 run = "./experiments/corpus.sh"
 
+[tasks."study:cases"]
+description = "Case coverage of the pruned corpus suites (slow: ~1 h on 2 cores; run after study:corpus)"
+run = "bun experiments/cases.ts"
+
 [tasks.study]
 description = "Run the whole study"
 depends = ["study:coupon", "study:generators", "study:boundaries", "study:redemption", "study:corpus"]
