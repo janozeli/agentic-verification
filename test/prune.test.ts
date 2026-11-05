@@ -61,3 +61,27 @@ describe("removeCalls", () => {
     );
   });
 });
+
+describe("removeCalls on each-tables", () => {
+  // Runners report the line where the test call starts, which for a
+  // multi-line table is the `])(` line, not the `test.each(` line.
+  const src = [
+    'describe("g", () => {',
+    "  test.each([",
+    "    [1],",
+    "    [2],",
+    '  ])("n %s", (n) => {',
+    "    expect(n).toBeGreaterThan(0);",
+    "  });",
+    "",
+    '  it("stays", () => {});',
+    "});",
+    "",
+  ].join("\n");
+
+  it("removes the whole table and its call from any line inside it", () => {
+    const expected = ['describe("g", () => {', '  it("stays", () => {});', "});", ""].join("\n");
+    expect(removeCalls(src, [5])).toBe(expected);
+    expect(removeCalls(src, [2])).toBe(expected);
+  });
+});

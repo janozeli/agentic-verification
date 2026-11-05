@@ -1,0 +1,14 @@
+# Drops the defensive copy of the defaults as a micro-optimization, so merged values are written into (and returned as) the caller's defaults object, which the README promises is never modified.
+diff --git a/src/defu.ts b/src/defu.ts
+index 1b2b84e..c099e60 100644
+--- a/src/defu.ts
++++ b/src/defu.ts
+@@ -7,7 +7,7 @@ function _defu<T>(baseObject: T, defaults: any, namespace = ".", merger?: Merger
+     return _defu(baseObject, {}, namespace, merger);
+   }
+ 
+-  const object = { ...defaults };
++  const object = defaults;
+ 
+   for (const key of Object.keys(baseObject as Record<string, any>)) {
+     if (key === "__proto__" || key === "constructor") {

@@ -1,0 +1,14 @@
+# Assumes defaults are the base list and user-provided array items are appended after them, instead of user items coming first.
+diff --git a/src/defu.ts b/src/defu.ts
+index 1b2b84e..12e05b7 100644
+--- a/src/defu.ts
++++ b/src/defu.ts
+@@ -25,7 +25,7 @@ function _defu<T>(baseObject: T, defaults: any, namespace = ".", merger?: Merger
+     }
+ 
+     if (Array.isArray(value) && Array.isArray(object[key])) {
+-      object[key] = [...value, ...object[key]];
++      object[key] = [...object[key], ...value];
+     } else if (isPlainObject(value) && isPlainObject(object[key])) {
+       object[key] = _defu(
+         value,

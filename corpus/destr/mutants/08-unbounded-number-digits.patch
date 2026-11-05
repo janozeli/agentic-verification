@@ -1,0 +1,14 @@
+# Treats the digit-count caps in the number signature as arbitrary and makes them unbounded, so long numeric strings like IDs ("12345678901234567890") are parsed into lossy numbers instead of being returned as the original string.
+diff --git a/src/index.ts b/src/index.ts
+index 8a32589..94a90b6 100644
+--- a/src/index.ts
++++ b/src/index.ts
+@@ -5,7 +5,7 @@ const suspectProtoRx =
+ const suspectConstructorRx =
+   /"(?:c|\\u0063)(?:o|\\u006[Ff])(?:n|\\u006[Ee])(?:s|\\u0073)(?:t|\\u0074)(?:r|\\u0072)(?:u|\\u0075)(?:c|\\u0063)(?:t|\\u0074)(?:o|\\u006[Ff])(?:r|\\u0072)"\s*:/;
+ 
+-const JsonSigRx = /^\s*["[{]|^\s*-?\d{1,16}(\.\d{1,17})?([Ee][+-]?\d+)?\s*$/;
++const JsonSigRx = /^\s*["[{]|^\s*-?\d+(\.\d+)?([Ee][+-]?\d+)?\s*$/;
+ 
+ function jsonParseTransform(key: string, value: any): any {
+   if (

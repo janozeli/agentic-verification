@@ -1,0 +1,14 @@
+# Treats the known-value fast lookup as case-sensitive, so "TRUE", "Null" or "NaN" are no longer recognized despite the README showing destr("TRUE") === true.
+diff --git a/src/index.ts b/src/index.ts
+index 8a32589..f70e765 100644
+--- a/src/index.ts
++++ b/src/index.ts
+@@ -44,7 +44,7 @@ export function destr<T = unknown>(value: any, options: Options = {}): T {
+   const _value = value.trim();
+ 
+   if (_value.length <= 9) {
+-    switch (_value.toLowerCase()) {
++    switch (_value) {
+       case "true": {
+         return true as T;
+       }

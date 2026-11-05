@@ -32,10 +32,20 @@ jobs:
           echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
           python -m pip install z3-solver==4.12.1.0
       - run: bun install --frozen-lockfile
+      - name: Allow unprivileged user namespaces (third-party code runs offline in one)
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
       - name: Verify the Dafny model and check the committed JavaScript is current
         run: |
           mise run model
           git diff --exit-code examples/coupon/spec/model.cjs
       - run: mise run study
       - name: Results match the committed ones
-        run: git diff --exit-code experiments/results
+        # The corpus runs Stryker on third-party suites, where a slow mutant can
+        # land as Killed on one machine and Timeout on another; it is uploaded
+        # instead of compared.
+        run: git diff --exit-code -- experiments/results ':!experiments/results/corpus.md'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: results
+          path: experiments/results

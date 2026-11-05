@@ -1,0 +1,14 @@
+# Uses a truthiness check to skip "empty" values, so user-provided 0, false and "" are treated like nullish and lose to the defaults.
+diff --git a/src/defu.ts b/src/defu.ts
+index 1b2b84e..516b092 100644
+--- a/src/defu.ts
++++ b/src/defu.ts
+@@ -16,7 +16,7 @@ function _defu<T>(baseObject: T, defaults: any, namespace = ".", merger?: Merger
+ 
+     const value = (baseObject as Record<string, any>)[key];
+ 
+-    if (value === null || value === undefined) {
++    if (!value) {
+       continue;
+     }
+ 

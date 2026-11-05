@@ -1,0 +1,18 @@
+# Reads "only applies to array values" as "ignore the function otherwise", so in defuArrayFn a function whose default is not an array is discarded (keeping the default) instead of being kept as the value.
+diff --git a/src/defu.ts b/src/defu.ts
+index 1b2b84e..9dc8103 100644
+--- a/src/defu.ts
++++ b/src/defu.ts
+@@ -62,8 +62,10 @@ export const defuFn = createDefu((object, key, currentValue) => {
+ 
+ // Custom version with function merge support only for defined arrays
+ export const defuArrayFn = createDefu((object, key, currentValue) => {
+-  if (Array.isArray(object[key]) && typeof currentValue === "function") {
+-    object[key] = currentValue(object[key]);
++  if (typeof currentValue === "function") {
++    if (Array.isArray(object[key])) {
++      object[key] = currentValue(object[key]);
++    }
+     return true;
+   }
+ });

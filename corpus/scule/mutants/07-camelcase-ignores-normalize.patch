@@ -1,0 +1,14 @@
+# camelCase does not forward its options to pascalCase, so { normalize: true } is silently ignored and camelCase("FooBAR", { normalize: true }) gives "fooBAR" instead of "fooBar".
+diff --git a/src/index.ts b/src/index.ts
+index f1983fd..198d7ae 100644
+--- a/src/index.ts
++++ b/src/index.ts
+@@ -113,7 +113,7 @@ export function camelCase<
+   T extends string | readonly string[],
+   UserCaseOptions extends CaseOptions = CaseOptions,
+ >(str?: T, opts?: UserCaseOptions) {
+-  return lowerFirst(pascalCase(str || "", opts)) as CamelCase<
++  return lowerFirst(pascalCase(str || "")) as CamelCase<
+     T,
+     UserCaseOptions["normalize"]
+   >;

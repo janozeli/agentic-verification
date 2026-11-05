@@ -53,9 +53,17 @@ run = "./experiments/redemption.sh"
 description = "Oracle vs boundary bug, with biased and uniform input generation"
 run = "./experiments/generators.sh"
 
+[tasks."study:boundaries"]
+description = "Which spec boundaries the input generators reach, from the Dafny model alone"
+run = "bun experiments/boundaries.ts"
+
+[tasks."study:corpus"]
+description = "Real libraries: human vs agent-written suites, Stryker and semantic mutants (runs third-party code offline)"
+run = "./experiments/corpus.sh"
+
 [tasks.study]
 description = "Run the whole study"
-depends = ["study:coupon", "study:generators", "study:redemption"]
+depends = ["study:coupon", "study:generators", "study:boundaries", "study:redemption", "study:corpus"]
 
 [tasks.prune]
 description = "Show what the pruner says about the example suite (after study:coupon)"

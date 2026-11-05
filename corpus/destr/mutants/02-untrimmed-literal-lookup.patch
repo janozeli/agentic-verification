@@ -1,0 +1,18 @@
+# Drops the trim before the known-value lookup, assuming inputs are already clean, so " true " or "null\n" (e.g. from env vars or files) fall through and come back as raw strings.
+diff --git a/src/index.ts b/src/index.ts
+index 8a32589..311e3c5 100644
+--- a/src/index.ts
++++ b/src/index.ts
+@@ -41,10 +41,8 @@ export function destr<T = unknown>(value: any, options: Options = {}): T {
+     return value.slice(1, -1) as T;
+   }
+ 
+-  const _value = value.trim();
+-
+-  if (_value.length <= 9) {
+-    switch (_value.toLowerCase()) {
++  if (value.length <= 9) {
++    switch (value.toLowerCase()) {
+       case "true": {
+         return true as T;
+       }

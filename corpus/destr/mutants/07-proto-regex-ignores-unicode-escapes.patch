@@ -1,0 +1,14 @@
+# Simplifies the __proto__ detection to the literal spelling, forgetting that JSON keys may use unicode escapes (e.g. "\u005f_proto__") that decode to the same key, so escaped payloads skip sanitization and the strict-mode check.
+diff --git a/src/index.ts b/src/index.ts
+index 8a32589..e95adfa 100644
+--- a/src/index.ts
++++ b/src/index.ts
+@@ -1,7 +1,6 @@
+ // https://github.com/fastify/secure-json-parse
+ // https://github.com/hapijs/bourne
+-const suspectProtoRx =
+-  /"(?:_|\\u0{2}5[Ff]){2}(?:p|\\u0{2}70)(?:r|\\u0{2}72)(?:o|\\u0{2}6[Ff])(?:t|\\u0{2}74)(?:o|\\u0{2}6[Ff])(?:_|\\u0{2}5[Ff]){2}"\s*:/;
++const suspectProtoRx = /"__proto__"\s*:/;
+ const suspectConstructorRx =
+   /"(?:c|\\u0063)(?:o|\\u006[Ff])(?:n|\\u006[Ee])(?:s|\\u0073)(?:t|\\u0074)(?:r|\\u0072)(?:u|\\u0075)(?:c|\\u0063)(?:t|\\u0074)(?:o|\\u006[Ff])(?:r|\\u0072)"\s*:/;
+ 

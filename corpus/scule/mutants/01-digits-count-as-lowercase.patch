@@ -1,0 +1,14 @@
+# Digits are treated as lowercase (isUppercase returns false instead of undefined), so numbers take part in case-change splitting instead of being ignored, e.g. "ABC1D" splits into ABC1 + D.
+diff --git a/src/index.ts b/src/index.ts
+index f1983fd..b3e73ae 100644
+--- a/src/index.ts
++++ b/src/index.ts
+@@ -14,7 +14,7 @@ const STR_SPLITTERS = ["-", "_", "/", "."] as const;
+ 
+ export function isUppercase(char = ""): boolean | undefined {
+   if (NUMBER_CHAR_RE.test(char)) {
+-    return undefined;
++    return false;
+   }
+   return char !== char.toLowerCase();
+ }

@@ -4,7 +4,7 @@
 //   --strict    exit with code 1 when there is anything to remove
 import { readFileSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
-import { analyze, type TestCase } from "./prune";
+import { analyze, deletable, type TestCase } from "./prune";
 import { removeCalls } from "./remove";
 
 const args = process.argv.slice(2);
@@ -35,9 +35,16 @@ for (const m of a.survived) {
   console.log(`${at(m.file, m.line)}: no test rejects ${m.mutator} -> ${m.replacement.split("\n")[0]}`);
 }
 
-if (args.includes("--apply") && removable.length > 0) {
+const { definitions, deletable: toDelete, blocked } = deletable(a.tests, new Set(removable.map((t) => t.id)));
+console.log(
+  `${n(definitions, "test definition")} in source; ${toDelete.length} can be deleted` +
+    (blocked.length ? `; ${blocked.length} removable tests share a definition with tests that stay` : "") +
+    ".",
+);
+
+if (args.includes("--apply") && toDelete.length > 0) {
   const byFile = new Map<string, TestCase[]>();
-  for (const t of removable) byFile.set(t.file, [...(byFile.get(t.file) ?? []), t]);
+  for (const t of toDelete) byFile.set(t.file, [...(byFile.get(t.file) ?? []), t]);
   for (const [file, tests] of byFile) {
     if (tests.some((t) => t.line === undefined)) {
       console.error(`${file}: report has no test locations, skipping`);
@@ -45,7 +52,7 @@ if (args.includes("--apply") && removable.length > 0) {
     }
     const path = join(root, file);
     writeFileSync(path, removeCalls(readFileSync(path, "utf8"), tests.map((t) => t.line!)));
-    console.log(`removed ${tests.length} tests from ${relative(process.cwd(), path)}`);
+    console.log(`deleted ${n(tests.length, "definition")} from ${relative(process.cwd(), path)}`);
   }
 }
 

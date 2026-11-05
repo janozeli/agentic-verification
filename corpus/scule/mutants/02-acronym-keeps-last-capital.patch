@@ -1,0 +1,17 @@
+# On an upper-to-lower case change the whole uppercase run is emitted as one word instead of handing its last capital to the next word, so "XMLHttpRequest" splits as XMLH + ttp + Request and "WWWAuthenticate" as WWWA + uthenticate.
+diff --git a/src/index.ts b/src/index.ts
+index f1983fd..47a7c87 100644
+--- a/src/index.ts
++++ b/src/index.ts
+@@ -61,9 +61,8 @@ export function splitByCase<
+       }
+       // Case falling edge
+       if (previousUpper === true && isUpper === false && buff.length > 1) {
+-        const lastChar = buff.at(-1);
+-        parts.push(buff.slice(0, Math.max(0, buff.length - 1)));
+-        buff = lastChar + char;
++        parts.push(buff);
++        buff = char;
+         previousUpper = isUpper;
+         continue;
+       }

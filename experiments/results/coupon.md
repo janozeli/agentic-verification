@@ -8,7 +8,7 @@
 | Oracle (verified Lean model, external process) | 1 | 26 / 27 | 9 / 9 | none |
 | Properties + oracle | 5 | 26 / 27 | 9 / 9 | none |
 
-Lines of test code: examples 147, properties + Dafny oracle 107 (generators included), Lean oracle 32 (reusing the generators).
+Lines of test code: examples 147, properties + Dafny oracle 112 (generators included), Lean oracle 32 (reusing the generators).
 
 Tests that check the models rather than the code, and so kill nothing: "models > Lean and Dafny agree".
 

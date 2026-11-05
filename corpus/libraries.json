@@ -1,0 +1,20 @@
+{
+  "scule": {
+    "repo": "https://github.com/unjs/scule",
+    "commit": "5bc68048caad7c0e7de35842c83a510e8e1a7c4f",
+    "mutate": ["src/index.ts"],
+    "humanTests": "test/**/*.test.ts"
+  },
+  "defu": {
+    "repo": "https://github.com/unjs/defu",
+    "commit": "82632b66f5914e9946edce300e10633a3d5c0cb7",
+    "mutate": ["src/defu.ts", "src/_utils.ts"],
+    "humanTests": "test/**/*.test.ts"
+  },
+  "destr": {
+    "repo": "https://github.com/unjs/destr",
+    "commit": "541b6f9aeada9fc30de9c5a7e086dbfc1c6fcdc7",
+    "mutate": ["src/index.ts"],
+    "humanTests": "test/**/*.test.ts"
+  }
+}

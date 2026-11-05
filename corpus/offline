@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Runs a command with no network access except loopback, which test runners
+# use to talk to their own workers. Third-party code in vendor/ always runs
+# through this.
+exec unshare -rn sh -c '
+python3 -c "
+import socket, fcntl, struct
+s = socket.socket()
+flags = struct.unpack(\"16sH\", fcntl.ioctl(s, 0x8913, struct.pack(\"16sH\", b\"lo\", 0)))[1]
+fcntl.ioctl(s, 0x8914, struct.pack(\"16sH\", b\"lo\", flags | 1))
+" && exec "$@"' sh "$@"

@@ -13,6 +13,10 @@
    matter which formal language, or whether the model runs in process?
 4. For behavior over time (concurrency, promises), can a model checker's
    counterexamples come back as native tests?
+5. Can the specification alone tell whether an input generator reaches its
+   boundaries, before any implementation exists?
+6. Do the findings hold on real libraries? How do suites written by an agent
+   compare with the ones their maintainers wrote?
 
 ## Setup
 
@@ -56,6 +60,20 @@ case per line on stdin, one result per line on stdout. The TypeScript side
 concurrent checkouts. `spec/Redemption.tla` models three designs; three
 TypeScript functions implement them.
 
+**Corpus** (`corpus/`). Three small, well-maintained MIT libraries from
+unjs: scule (string case), defu (default properties) and destr (safer
+`JSON.parse`), pinned by commit and fetched into `vendor/`, which is not
+versioned. Each gets two suites and one set of mutants:
+
+- the library's own, human-written suite;
+- a suite written by a coding agent that saw only `src/` and the README,
+  asked to "add a comprehensive Vitest test suite";
+- 8 semantic mutants per library, written as patches by a second agent from
+  the same `src/` and README, without seeing any tests.
+
+The libraries were reviewed before running, and their code only ever runs
+offline (`corpus/offline`, no network except loopback).
+
 **Determinism.** Stryker runs with per-test coverage and without bailing, so
 every test that kills a mutant is recorded. fast-check runs with fixed seeds.
 The Dafny output is byte-for-byte reproducible. The Lean toolchain is pinned. CI re-runs the study and fails
@@ -97,7 +115,7 @@ model, and committed. The judge that runs them stays deterministic.
 The 31 examples miss 4 of 9 misunderstandings, among them the inclusive
 minimum, which Stryker also flags as a surviving `<=`. The 4 rule properties catch 7 of 9,
 and the property suite, oracle and generators included, is about a quarter
-shorter (107 lines against 147). The two they miss are both about fixed coupons,
+shorter (112 lines against 147). The two they miss are both about fixed coupons,
 because none of the rules mentions fixed coupons. Properties are only as
 complete as the rules someone thought to write.
 
@@ -166,6 +184,72 @@ sample.
 In this study the step from TLC trace to Vitest test was done by hand.
 Automating it is open.
 
+### 7. The specification can show which boundaries the inputs miss
+
+Shifting each comparison in the compiled Dafny model (`<` to `<=` and back)
+and asking whether the generated inputs tell the shifted model from the
+original measures input quality without any implementation
+(`experiments/results/boundaries.md`).
+
+Of the model's five comparisons, an exhaustive pass over a small domain shows
+that only one is a real boundary: the minimum subtotal. The other four
+(both ends of the percentage clamp, the "discount covers everything" check
+and the encoding of "no minimum") change nothing when shifted. Biased inputs
+reach the real boundary in 10 of 10 seeds, uniform inputs in 0 of 10.
+
+These are the same numbers the implementation-level experiment gave in
+finding 4, obtained here from the specification alone. A generator can be
+checked against the spec before any code exists, and the check also says
+which comparisons in the spec carry meaning.
+
+### 8. On real libraries, agent suites are stronger and mostly redundant
+
+(`experiments/results/corpus.md`.) Every "after pruning" number is measured
+on a copy where the tests were actually deleted, not computed.
+
+| Library | Suite | Tests | Stryker detected | Semantic caught | Tests after pruning |
+|---|---|---:|---:|---:|---:|
+| scule | human | 63 | 75 / 81 | 7 / 8 | 46 |
+| scule | agent | 339 | 80 / 81 | 8 / 8 | 9 |
+| defu | human | 23 | 87 / 103 | 6 / 8 | 8 |
+| defu | agent | 225 | 101 / 103 | 8 / 8 | 21 |
+| destr | human | 22 | 111 / 141 | 6 / 8 | 20 |
+| destr | agent | 396 | 140 / 141 | 8 / 8 | 119 |
+
+Pruning never lost a detection: each pruned copy detects exactly the same
+mutants of both kinds as the full suite.
+
+- **The agent suites were not banal.** They were 5 to 18 times larger than
+  the human ones, detected more Stryker mutants, and caught all 24 semantic
+  mutants where the human suites caught 19. Two of the three agents also ran
+  mutation testing on their own suites, unprompted. The agents reported
+  suspected bugs; three were confirmed against the pinned code: scule splits
+  letters outside the Basic Multilingual Plane into invalid UTF-16, destr's
+  strict mode accepts `'"'`, which `JSON.parse` rejects, and defu drops
+  symbol keys from all but the last argument.
+- **They were mostly redundant.** Pruning cut them from 339 to 9 tests, 225
+  to 21 and 396 to 119. Pruned, the scule and defu agent suites are smaller
+  than the human suites and still catch more.
+- **Human suites carry redundancy too.** defu's went from 23 tests to 8.
+  scule's is redundant mostly inside `test.each` tables, so only 63 to 46
+  could actually be deleted.
+- **Most of what the human suites missed is documented.** scule's README
+  says numbers are ignored for case changes; defu's says the inputs are
+  never modified and only `null` and `undefined` are skipped; destr's
+  promises to avoid prototype pollution, which the missed mutant breaks
+  through escaped keys. The exception is destr's cap on the digits it parses
+  as numbers, which the README does not mention. Since the agent suites catch
+  all eight mutants of each library, none of them is equivalent.
+- **Syntactic-only pruning was unsafe again, on one library.** On scule it
+  would have dropped the tests behind 5 of the human suite's 7 semantic
+  catches and 4 of the agent suite's 8. On defu and destr it lost nothing.
+- **Tables limit what can be deleted.** A `test.each` table or a loop is one
+  definition in the source that produces many tests; it can only be deleted
+  when every test it produces is redundant. destr's agent suite keeps 119
+  tests for that reason, although 22 of them would keep the same detections;
+  defu's keeps 21 where 12 would do, and scule's human suite 46 where 11
+  would do.
+
 ## What this says about the ideas
 
 - **Tests as predicates over implementations** works as a basis: vacuity,
@@ -178,18 +262,33 @@ Automating it is open.
   with simple data. Nobody using the coupon suite needs to read Dafny or
   Lean; a failure is an ordinary Vitest diff with a small input. Behind a
   line-oriented protocol, the formal language is a replaceable part.
+- **Input quality can be measured against the spec** before any code
+  exists, by mutating the model instead of the implementation.
+- **The pruning problem is real but not the one expected.** Agents here did
+  not write weak tests; they wrote strong suites with most tests adding
+  nothing. Measured redundancy, not test quality, is what grows.
 - **Specification cannot be avoided, only moved.** Every gain in this study
   came from someone stating what correct means: rules, a model, mutants,
   a TLA+ property. The tools only make that statement checkable.
 
 ## Limits
 
-- One small function and one small protocol. Nothing here shows how the
-  approach scales to glue code, I/O or a real codebase.
-- The agent-style suite was written to imitate agent output; it was not
-  sampled from real agent runs.
-- The semantic mutants, the rules and both models were written by the same
-  author, an AI coding agent, in the same session. Blind spots may be shared.
+- One small function, one small protocol and three small pure libraries.
+  Nothing here shows how the approach scales to glue code, I/O or an
+  application codebase.
+- The coupon's agent-style suite was written to imitate agent output. The
+  corpus suites were written by real agent runs, but by one model family,
+  once each, with one prompt.
+- In the corpus, the test-writing and mutant-writing agents shared a
+  directory. The test writers saw the mutant files' names in a listing and
+  report not opening them; their suites were validated against the pinned,
+  unmodified code.
+- The human suites belong to small, mature libraries; they are a baseline of
+  careful human work, not of typical application tests.
+- In the coupon example, the semantic mutants, the rules and both models were
+  written by the same author, an AI coding agent, in the same session. Blind
+  spots may be shared. In the corpus, mutants and suites came from separate
+  agents, but of the same model family.
   The fixed-coupon gap in the rules is one that surfaced; others may not have.
 - Greedy set cover is not guaranteed minimal.
 - No agent was run with and without these tools, so nothing here measures
@@ -197,8 +296,11 @@ Automating it is open.
 
 ## Next
 
-- Run the pruner on a real repository whose tests were written by agents.
-- Generate semantic mutants from a task description and measure how many
-  survive review.
+- Prune at the table-row level, so a redundant row of a `test.each` table
+  can go without its siblings.
+- Use the boundaries the spec reveals to generate inputs, not only to
+  measure them.
+- Run the corpus with agents of different model families and several runs
+  each, to measure how much of this is one model's habit.
 - Translate TLC traces into native tests automatically.
 - An ablation: agent task success with and without the pruning gate in CI.
