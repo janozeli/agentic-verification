@@ -8,7 +8,9 @@ studies two questions, on a worked example and on real libraries:
 2. **Can formal methods sit behind ordinary tests?** Native code in, native
    failures out, with the formal model in the middle.
 
-The full write-up is in [STUDY.md](STUDY.md). Every number below is produced
+The full write-up is in [STUDY.md](STUDY.md); what already exists, what
+this study does not see, and how to look for the rest is in
+[PRIOR_ART.md](PRIOR_ART.md). Every number below is produced
 by `mise run study` and checked in CI.
 
 ## Results
