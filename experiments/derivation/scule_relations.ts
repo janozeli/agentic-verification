@@ -11,8 +11,8 @@
 // Run offline: corpus/offline bun experiments/derivation/scule_relations.ts
 import fc from "fast-check";
 import { readFileSync, writeFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { inspect } from "node:util";
-import * as scule from "../../vendor/scule/src/index";
 import { readReport } from "../../src/prune";
 
 type Call = { fn: string; args: unknown[]; out: unknown };
@@ -72,7 +72,8 @@ const AXIOMS: Axiom[] = [
 
 // 1. Check every axiom against the library itself.
 const word = fc.stringMatching(/^[a-zA-Z0-9_\-/.éÉßİ]{0,12}$/);
-const call = (fn: string, args: unknown[]) => (scule as Record<string, (...a: unknown[]) => unknown>)[fn](...args);
+const scule: Record<string, (...a: unknown[]) => unknown> = await import(resolve("vendor/scule/src/index.ts"));
+const call = (fn: string, args: unknown[]) => scule[fn](...args);
 const axiomChecks = AXIOMS.map((axiom) => {
   const seeds = ["splitByCase", "pascalCase", "kebabCase"];
   let counterexample: string | undefined;
