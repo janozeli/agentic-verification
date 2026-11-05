@@ -202,7 +202,7 @@ finding 4, obtained here from the specification alone. A generator can be
 checked against the spec before any code exists, and the check also says
 which comparisons in the spec carry meaning.
 
-### 8. On real libraries, agent suites are stronger and mostly redundant
+### 8. On three polished libraries, agent suites were strong and mostly redundant
 
 (`experiments/results/corpus.md`.) Every "after pruning" number is measured
 on a copy where the tests were actually deleted, not computed.
@@ -219,7 +219,14 @@ on a copy where the tests were actually deleted, not computed.
 Pruning never lost a detection: each pruned copy detects exactly the same
 mutants of both kinds as the full suite.
 
-- **The agent suites were not banal.** They were 5 to 18 times larger than
+The conditions matter for everything below: three small, mature, well
+documented libraries, a clean isolated task, a clear README, no existing
+tests to imitate, Stryker on disk. That is close to the best context an
+agent can get. Field data on agent pull requests, where context is real and
+messy, finds mostly weak oracles (see [PRIOR_ART.md](PRIOR_ART.md)). These
+results say what agents do in this context, not what they do in general.
+
+- **In this context, the agent suites were strong.** They were 5 to 18 times larger than
   the human ones, detected more Stryker mutants, and caught all 24 semantic
   mutants where the human suites caught 19. Two of the three agents also ran
   mutation testing on their own suites, unprompted. The agents reported
@@ -349,9 +356,11 @@ matches the model.
   line-oriented protocol, the formal language is a replaceable part.
 - **Input quality can be measured against the spec** before any code
   exists, by mutating the model instead of the implementation.
-- **The pruning problem is real but not the one expected.** Agents here did
-  not write weak tests; they wrote strong suites with most tests adding
-  nothing. Measured redundancy, not test quality, is what grows.
+- **Test quality may depend on context more than on the agent.** With a
+  clean, documented, isolated task, the agents here wrote strong suites in
+  which most tests added nothing; field data from messy real projects shows
+  mostly weak oracles. This is a hypothesis, not a finding: it needs the
+  same agent and code under varied context.
 - **Pruning is only sound as derivation.** A mutant proves a test
   necessary; only a proof shows it is unnecessary. How much a suite can
   shrink without losing cases depends on how much formal knowledge exists.

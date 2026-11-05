@@ -53,9 +53,12 @@ on a copy with the tests deleted.
 | destr | human | 22 | 111 / 141 | 6 / 8 | 20 |
 | destr | agent | 396 | 140 / 141 | 8 / 8 | 119 |
 
-- The agent suites were stronger than the human ones, and surfaced three
-  behaviors in the libraries that look like real bugs. They were mostly redundant: pruning removed up
-  to 97% of their tests without losing a single detection.
+- On these polished libraries, with a clean task and a clear README, the
+  agent suites were stronger than the human ones and surfaced three
+  behaviors that look like real bugs. They were also mostly redundant:
+  pruning removed up to 97% of their tests without losing a single
+  detection. This is the best context an agent gets; it says nothing about
+  agent tests in general.
 - Pruning on syntactic mutants alone was unsafe again on scule.
 - Mutating the formal model instead of the code shows which boundaries an
   input generator misses, before any implementation exists.
