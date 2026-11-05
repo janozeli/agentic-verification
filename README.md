@@ -75,3 +75,4 @@ The pruner works on any Stryker JSON report produced with
 ```sh
 bun src/cli.ts reports/mutation.json [--semantic kills.json] [--apply] [--strict]
 ```
+
