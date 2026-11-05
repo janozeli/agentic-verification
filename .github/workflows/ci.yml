@@ -30,7 +30,7 @@ jobs:
         run: |
           dotnet tool install --global dafny --version 4.11.0
           echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
-          python -m pip install z3-solver==4.12.1.0
+          python -m pip install z3-solver==4.12.1.0 "setuptools<81"
       - run: bun install --frozen-lockfile
       - name: Allow unprivileged user namespaces (third-party code runs offline in one)
         run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0

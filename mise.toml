@@ -62,12 +62,21 @@ description = "Real libraries: human vs agent-written suites, Stryker and semant
 run = "./experiments/corpus.sh"
 
 [tasks."study:cases"]
-description = "Case coverage of the pruned corpus suites (slow: ~1 h on 2 cores; run after study:corpus)"
-run = "bun experiments/cases.ts"
+description = "Case coverage of the pruned corpus suites, then which lost cases are derivable (slow: ~1 h on 2 cores; after study:corpus)"
+run = ["bun experiments/cases.ts", "corpus/offline bun experiments/derivation/scule_relations.ts"]
+
+[tasks."study:derivation"]
+description = "Which coupon tests follow from kept tests, proved rules or the model (Z3), and Lean certificates for every value test"
+depends = ["lean"]
+run = """
+${PYTHON:-python3} experiments/derivation/coupon_smt.py
+python3 experiments/derivation/lean_cases.py
+cd examples/coupon/lean && "$HOME/.elan/bin/lake" env lean Cases.lean
+"""
 
 [tasks.study]
 description = "Run the whole study"
-depends = ["study:coupon", "study:generators", "study:boundaries", "study:redemption", "study:corpus"]
+depends = ["study:coupon", "study:generators", "study:boundaries", "study:derivation", "study:redemption", "study:corpus"]
 
 [tasks.prune]
 description = "Show what the pruner says about the example suite (after study:coupon)"

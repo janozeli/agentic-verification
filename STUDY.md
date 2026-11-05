@@ -283,6 +283,58 @@ both means compressing rather than deleting: folding redundant tests into
 rows of the tests that stay, so the cases remain as data while the test
 code shrinks.
 
+### 10. A test can only go if it is derivable
+
+Finding 9 has a precise cause. Treat each test as a proposition and the
+specification as axioms. A test is independent if there is a countermodel:
+an implementation that satisfies everything else and violates it (Padoa's
+method for the independence of axioms). It is redundant only if it is
+derivable from the tests that stay plus the axioms. A mutant is a
+countermodel, so finding one proves a test necessary; not finding one in a
+sample proves nothing. Pruning on mutants treated that absence as a
+derivation, and lost the cases.
+
+Three experiments measure derivability directly (`experiments/derivation/`):
+
+- **Coupon, with Z3** (`results/derivation-coupon.md`). Each value test of
+  the agent-style suite becomes a fact about an uninterpreted function. Of
+  the 15 tests pruning removed, 0 follow from the kept tests alone, 4 from
+  the kept tests plus the six proved rules, and 15 from the kept tests plus
+  the model. Every "no" comes with a countermodel, confirmed by building that
+  implementation and checking the rules on it. They show exactly what the
+  rules leave open: "10% off 1000 is 900" does not follow, because 901
+  satisfies every rule; the rounding rule bounds the discount from above but
+  never says it is the floor. The 4 kept tests form an irredundant basis:
+  each has a countermodel that satisfies all the others.
+- **Coupon, with Lean** (`lean/Cases.lean`). All 25 value tests are
+  theorems about the Lean model, each closed by `decide`, a kernel-checked
+  certificate that the test is an instance of the model. The 6 others make
+  no claim a pure model can express. One of them, "does not mutate the
+  input", is a property of the implementation, not of the function.
+- **scule, with relational axioms** (`results/derivation-scule.md`). Three
+  relations read from scule's source and README (converters are
+  `splitByCase` plus a recipe, `camelCase` is `lowerFirst` of `pascalCase`,
+  snake and flat case are kebab case with another joiner) hold on 5,000
+  generated inputs each. Closing the kept tests' facts under them makes 4 of
+  the 14 lost human cases derivable, and 3 of the 273 lost agent cases. No
+  derived value contradicted a test. Relations move a fact between functions
+  on the same input; almost every lost case is about an input no kept test
+  touches.
+
+How far a suite can shrink without losing cases is therefore a function of
+how much is formally known:
+
+| Knowledge | Coupon tests derivable | scule lost cases derivable |
+|---|---:|---:|
+| the kept tests only | 0 / 15 | 0 |
+| + relations between functions | not applicable | 4 / 14 human, 3 / 273 agent |
+| + proved rules | 4 / 15 | no rules |
+| + full model | 15 / 15 | no model |
+
+Without a formal core, the only sound cut is a duplicate case. With a full
+model, every case is derivable, and what is left to test is that the code
+matches the model.
+
 ## What this says about the ideas
 
 - **Tests as predicates over implementations** works as a basis: vacuity,
@@ -300,6 +352,9 @@ code shrinks.
 - **The pruning problem is real but not the one expected.** Agents here did
   not write weak tests; they wrote strong suites with most tests adding
   nothing. Measured redundancy, not test quality, is what grows.
+- **Pruning is only sound as derivation.** A mutant proves a test
+  necessary; only a proof shows it is unnecessary. How much a suite can
+  shrink without losing cases depends on how much formal knowledge exists.
 - **Specification cannot be avoided, only moved.** Every gain in this study
   came from someone stating what correct means: rules, a model, mutants,
   a TLA+ property. The tools only make that statement checkable.

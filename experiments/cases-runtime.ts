@@ -26,6 +26,15 @@ const loadKeys = () =>
 const render = (args: unknown[]) =>
   inspect(args, { depth: 50, sorted: true, maxArrayLength: Infinity, maxStringLength: Infinity, breakLength: Infinity, getters: false });
 
+// JSON-safe copy when there is one, so derivation scripts can read calls back.
+const plain = (x: unknown) => {
+  try {
+    return JSON.parse(JSON.stringify(x ?? null));
+  } catch {
+    return null;
+  }
+};
+
 export function perturb(value: unknown): unknown {
   if (typeof value === "string") return `${value}⁣`;
   if (typeof value === "number") return Number.isNaN(value) ? 0 : value + 1;
@@ -52,8 +61,10 @@ export function wrap<T>(name: string, fn: T): T {
   const wrapped = function (this: unknown, ...args: unknown[]) {
     const key = `${name}${render(args)}`;
     if (mode === "record") {
-      appendFileSync(file, `${JSON.stringify({ test: expect.getState().currentTestName, key })}\n`);
-      return fn.apply(this, args);
+      const out = fn.apply(this, args);
+      const call = { fn: name, args: plain(args), out: plain(out) };
+      appendFileSync(file, `${JSON.stringify({ test: expect.getState().currentTestName, key, call })}\n`);
+      return out;
     }
     if (mode === "perturb") {
       keys ??= loadKeys();
