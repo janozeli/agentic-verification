@@ -74,13 +74,18 @@ python3 experiments/derivation/lean_cases.py
 cd examples/coupon/lean && "$HOME/.elan/bin/lake" env lean Cases.lean
 """
 
+[tasks."study:history"]
+description = "Revert real fix commits and run the full and pruned suites against them"
+depends = ["study:corpus"]
+run = "./experiments/history.sh"
+
 [tasks."study:triangulate"]
 description = "Check two independent implementations of the pruning verdict agree on every report"
 run = "./triangulation/check.sh"
 
 [tasks.study]
 description = "Run the whole study"
-depends = ["study:coupon", "study:generators", "study:boundaries", "study:derivation", "study:redemption", "study:corpus"]
+depends = ["study:coupon", "study:generators", "study:boundaries", "study:derivation", "study:redemption", "study:corpus", "study:history"]
 
 [tasks.prune]
 description = "Show what the pruner says about the example suite (after study:coupon)"

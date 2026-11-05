@@ -365,6 +365,21 @@ Agreement of two implementations is evidence that the verdict computes the
 definition, not that the definition is the right one; both share the spec,
 the inputs and Stryker's `killedBy`.
 
+### 12. Pruning deleted the regression test for a real bug
+
+Four real bugs from the libraries' history were brought back by reverting
+their fix commits on the pinned source (the 4 of 23 fix commits whose
+revert applies cleanly), and run against the full and pruned suites
+([results](experiments/results/history.md)). The predictions were committed
+before the run ([BELIEFS.md](BELIEFS.md)).
+
+All four full suites, human and agent, catch all four. Every pruned agent
+suite still does. The pruned defu human suite does not: the test that
+catches the inherited-enumerable-properties bug is the one its fix added,
+and pruning deleted it as redundant, because no Stryker or semantic mutant
+needed it. A regression test is a record that a fault happened; the
+mutants are a sample chosen later, and the sample did not contain it.
+
 ## What this says about the ideas
 
 - **Tests as predicates over implementations** works as a basis: vacuity,
@@ -411,6 +426,8 @@ the inputs and Stryker's `killedBy`.
   agents, but of the same model family.
   The fixed-coupon gap in the rules is one that surfaced; others may not have.
 - Greedy set cover is not guaranteed minimal.
+- Historical faults: 4, the ones whose revert applies cleanly; that
+  selection may favour small, local fixes.
 - No agent was run with and without these tools, so nothing here measures
   effect on agent task success.
 

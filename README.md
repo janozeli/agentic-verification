@@ -10,7 +10,9 @@ studies two questions, on a worked example and on real libraries:
 
 The full write-up is in [STUDY.md](STUDY.md); what already exists, what
 this study does not see, and how to look for the rest is in
-[PRIOR_ART.md](PRIOR_ART.md). Every number below is produced
+[PRIOR_ART.md](PRIOR_ART.md). What the study believes, how strongly and
+why, with predictions committed before the runs that test them, is in
+[BELIEFS.md](BELIEFS.md). Every number below is produced
 by `mise run study` and checked in CI.
 
 ## Results

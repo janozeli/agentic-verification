@@ -31,12 +31,13 @@ having expected what happened.
 |---|---|---|---|---|---|
 | B1 | On clean, isolated tasks, most tests an agent writes reject no fault the rest miss | measured | 0.6 recon | 0.8 | the same measurement on application code, or under messier context |
 | B2 | Agent test quality depends more on context than on the agent | hypothesis | 0.6 recon | 0.6 | same model and code, varied context, quality unchanged |
-| B3 | Syntactic mutants alone are not a safe basis for pruning | measured | 0.7 recon | 0.9 | semantic or historical faults that the Stryker-pruned suites still catch |
+| B3 | Syntactic mutants alone are not a safe basis for pruning | measured | 0.7 recon | 0.93 | semantic or historical faults that the Stryker-pruned suites still catch |
 | B4 | Pruning that keeps every killed mutant still loses cases | measured | 0.5 recon | 0.95 | a case-coverage instrument error; see B9 |
 | B5 | Without a formal core, only duplicate cases can be cut soundly | proved / finite (coupon), measured (scule) | 0.7 recon | 0.85 | a sound cut found by another method (e.g. metamorphic relations) on a library with no model |
 | B6 | A verified model as oracle catches what its inputs reach | measured | 0.8 recon | 0.9 | a fault inside the reached input space the oracle misses |
 | B7 | The formal language of the oracle barely matters | measured | 0.5 recon | 0.7 | an oracle language whose models are much cheaper to write or to trust |
 | B8 | The pruning verdict computes its definition | measured | 0.9 recon | 0.95 | a disagreement on a new report; see finding 11 |
+| B10 | Mutant-based pruning can delete a regression test for a fault that really happened | measured (1 of 4 faults) | 0.4 prereg (H3) | 0.9 that it can; frequency unknown | the case is an artefact of the revert (it is not: the deleted test is the one the fix added) |
 | B9 | The case-coverage and patch instruments measure what they claim | measured (self-checks only) | 0.8 recon | 0.8 | an independent implementation disagreeing |
 
 B8 went up after triangulation, but the first run also found a real gap,
@@ -66,3 +67,19 @@ Written before running any of them:
 With 4 faults, no outcome moves B1, B3 or B4 much; the point is to find
 out whether the method works before porting the 19 reverts that do not
 apply cleanly.
+
+### Outcome
+
+Run after the commit above; table in
+[experiments/results/history.md](experiments/results/history.md).
+
+| # | Credence | Outcome |
+|---|---|---|
+| H1 | 0.85 | true: 4 of 4 |
+| H2 | 0.6 | true: 4 of 4 |
+| H3 | 0.4 | true: pruning deleted defu's `should ignore inherited enumerable properties`, the regression test added by the fix being reverted, as redundant; the pruned suite lets the bug back in |
+| H4 | 0.35 | false: every pruned agent suite still catches all 4, with fewer failing tests (scule 25 to 1, destr 18 to 10) |
+
+H2 was underconfident. H3 happened at 0.4: a regression test records a
+fault that happened, which no mutant set chosen afterwards needs to
+contain. One case shows that it can happen, not how often.
