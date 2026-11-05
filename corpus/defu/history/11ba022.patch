@@ -1,0 +1,20 @@
+# revert of fix: ignore inherited enumerable properties
+diff --git a/src/defu.ts b/src/defu.ts
+index 3b438bb..5eb3cc8 100644
+--- a/src/defu.ts
++++ b/src/defu.ts
+@@ -9,12 +9,12 @@ function _defu<T>(baseObject: T, defaults: any, namespace = ".", merger?: Merger
+ 
+   const object = { ...defaults };
+ 
+-  for (const key of Object.keys(baseObject as Record<string, any>)) {
++  for (const key in baseObject) {
+     if (key === "__proto__" || key === "constructor") {
+       continue;
+     }
+ 
+-    const value = (baseObject as Record<string, any>)[key];
++    const value = baseObject[key];
+ 
+     if (value === null || value === undefined) {
+       continue;

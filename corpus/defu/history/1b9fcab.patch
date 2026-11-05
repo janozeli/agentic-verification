@@ -1,0 +1,20 @@
+# revert of fix: merge objects with `Module` type (#121)
+diff --git a/src/_utils.ts b/src/_utils.ts
+index 41e29b9..fd9f2f3 100644
+--- a/src/_utils.ts
++++ b/src/_utils.ts
+@@ -14,13 +14,9 @@ export function isPlainObject(value: unknown): boolean {
+     return false;
+   }
+ 
+-  if (Symbol.iterator in value) {
++  if (Symbol.toStringTag in value || Symbol.iterator in value) {
+     return false;
+   }
+ 
+-  if (Symbol.toStringTag in value) {
+-    return Object.prototype.toString.call(value) === "[object Module]";
+-  }
+-
+   return true;
+ }
