@@ -1,0 +1,14 @@
+# Folds the arguments like Object.assign, letting each later argument override the accumulated result, so the rightmost defaults win instead of the leftmost object.
+diff --git a/src/defu.ts b/src/defu.ts
+index 1b2b84e..1df87be 100644
+--- a/src/defu.ts
++++ b/src/defu.ts
+@@ -45,7 +45,7 @@ function _defu<T>(baseObject: T, defaults: any, namespace = ".", merger?: Merger
+ export function createDefu(merger?: Merger): DefuFunction {
+   return (...arguments_) =>
+     // eslint-disable-next-line unicorn/no-array-reduce
+-    arguments_.reduce((p, c) => _defu(p, c, "", merger), {} as any);
++    arguments_.reduce((p, c) => _defu(c, p, "", merger), {} as any);
+ }
+ 
+ // Standard version

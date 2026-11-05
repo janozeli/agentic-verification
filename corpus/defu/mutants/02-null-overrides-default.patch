@@ -1,0 +1,14 @@
+# Treats an explicit null in the object as an intentional override that should replace the default, so only undefined is skipped.
+diff --git a/src/defu.ts b/src/defu.ts
+index 1b2b84e..4170b37 100644
+--- a/src/defu.ts
++++ b/src/defu.ts
+@@ -16,7 +16,7 @@ function _defu<T>(baseObject: T, defaults: any, namespace = ".", merger?: Merger
+ 
+     const value = (baseObject as Record<string, any>)[key];
+ 
+-    if (value === null || value === undefined) {
++    if (value === undefined) {
+       continue;
+     }
+ 

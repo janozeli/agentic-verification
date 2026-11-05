@@ -5,3 +5,4 @@ reports/
 *.dtr
 *_TTrace_*
 .lake/
+vendor/

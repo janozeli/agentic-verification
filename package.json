@@ -9,11 +9,14 @@
     "typecheck": "tsc -p ."
   },
   "devDependencies": {
+    "@babel/parser": "^8.1.0",
+    "@babel/types": "^8.1.0",
     "@stryker-mutator/core": "^10.1.1",
     "@stryker-mutator/vitest-runner": "^10.1.1",
     "@types/bun": "^1.4.4",
     "@types/node": "^26.6.6",
     "bignumber.js": "^11.1.5",
+    "expect-type": "^1.4.0",
     "fast-check": "^4.10.2",
     "typescript": "^7.0.2",
     "vitest": "^5.1.0"

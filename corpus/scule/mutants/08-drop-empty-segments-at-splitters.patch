@@ -1,0 +1,16 @@
+# splitByCase drops the empty segments produced by leading or repeated splitters, so splitByCase("foo--bar") gives [foo, bar] instead of [foo, '', bar] and kebabCase("-foo") gives "foo" instead of "-foo".
+diff --git a/src/index.ts b/src/index.ts
+index f1983fd..6992f58 100644
+--- a/src/index.ts
++++ b/src/index.ts
+@@ -44,7 +44,9 @@ export function splitByCase<
+     // Splitter
+     const isSplitter = (splitters as unknown as string).includes(char);
+     if (isSplitter === true) {
+-      parts.push(buff);
++      if (buff) {
++        parts.push(buff);
++      }
+       buff = "";
+       previousUpper = undefined;
+       continue;

@@ -112,3 +112,18 @@ export function analyze(report: Report, semantic: NamedMutant[] = []): Analysis 
     killedCount: mutants.filter((m) => m.status === "Killed").length,
   };
 }
+
+// One source definition (an `it(...)`, a `test.each(...)(...)`, a loop body)
+// can produce many tests. A definition can only be deleted when every test it
+// produces is removable.
+export function deletable(tests: TestCase[], removable: Set<string>) {
+  const byDefinition = new Map<string, TestCase[]>();
+  for (const t of tests) {
+    const key = `${t.file}:${t.line}`;
+    byDefinition.set(key, [...(byDefinition.get(key) ?? []), t]);
+  }
+  const definitions = [...byDefinition.values()];
+  const deletable = definitions.filter((ts) => ts.every((t) => removable.has(t.id))).map((ts) => ts[0]);
+  const blocked = definitions.filter((ts) => !ts.every((t) => removable.has(t.id))).flat().filter((t) => removable.has(t.id));
+  return { definitions: definitions.length, deletable, blocked };
+}

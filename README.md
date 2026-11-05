@@ -1,7 +1,7 @@
 # agentic-verification
 
 Coding agents write tests faster than anyone can judge them. This repository
-studies two questions:
+studies two questions, on a worked example and on real libraries:
 
 1. **Which tests earn their place?** Measure what each test rejects and
    remove the ones that reject nothing new.
@@ -37,6 +37,27 @@ written as whole alternative implementations.
   and a Lean model run as a separate process, one JSON line per case, give the
   same results, and the two models agree with each other.
 
+Real libraries: three small unjs libraries, each with its maintainers'
+suite and a suite written by an agent that never saw it, against Stryker and
+against 8 semantic mutants written by a separate agent. "Pruned" is measured
+on a copy with the tests deleted.
+
+| Library | Suite | Tests | Stryker detected | Semantic caught | Tests after pruning |
+|---|---|---:|---:|---:|---:|
+| scule | human | 63 | 75 / 81 | 7 / 8 | 46 |
+| scule | agent | 339 | 80 / 81 | 8 / 8 | 9 |
+| defu | human | 23 | 87 / 103 | 6 / 8 | 8 |
+| defu | agent | 225 | 101 / 103 | 8 / 8 | 21 |
+| destr | human | 22 | 111 / 141 | 6 / 8 | 20 |
+| destr | agent | 396 | 140 / 141 | 8 / 8 | 119 |
+
+- The agent suites were stronger than the human ones, and surfaced three
+  behaviors in the libraries that look like real bugs. They were mostly redundant: pruning removed up
+  to 97% of their tests without losing a single detection.
+- Pruning on syntactic mutants alone was unsafe again on scule.
+- Mutating the formal model instead of the code shows which boundaries an
+  input generator misses, before any implementation exists.
+
 Redemption example: a coupon with limited uses under concurrent checkouts,
 model-checked with TLC, with each counterexample replayed as a Vitest test.
 
@@ -50,10 +71,15 @@ model-checked with TLC, with each counterexample replayed as a Vitest test.
 
 ```
 src/                 the pruner: Stryker report (+ semantic mutants) in, verdicts or deletions out
+corpus/              pinned list of real libraries, agent suites and semantic mutants as patches
 examples/coupon/     function, agent-style suite, properties, semantic mutants, Dafny and Lean models
 examples/redemption/ TLA+ spec, TypeScript implementations, replayed counterexamples
 experiments/         scripts that produce experiments/results/
 ```
+
+The libraries in the corpus are not versioned: `corpus/fetch.sh` clones them
+at pinned commits into `vendor/`, which git ignores, and their code only runs
+offline (`corpus/offline`).
 
 ## Running
 
@@ -64,7 +90,7 @@ Vitest and Stryker, elan for Lean (the toolchain itself is pinned in
 ```sh
 mise install && bun install
 mise run test     # build the Lean oracle, type-check, run all suites
-mise run study    # needs Java; regenerates experiments/results/
+mise run study    # needs Java; regenerates experiments/results/ (the corpus takes ~15 min)
 mise run prune    # pruner verdicts on the example suite (after the study)
 mise run model    # re-verify and recompile the Dafny model (needs Dafny 4.11 and Z3 4.12.1)
 ```

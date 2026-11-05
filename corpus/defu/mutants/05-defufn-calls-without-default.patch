@@ -1,0 +1,14 @@
+# Assumes defuFn always invokes a user-provided function (passing undefined when no default exists) rather than keeping the function as the value when the default is not defined.
+diff --git a/src/defu.ts b/src/defu.ts
+index 1b2b84e..c88fb51 100644
+--- a/src/defu.ts
++++ b/src/defu.ts
+@@ -54,7 +54,7 @@ export default defu;
+ 
+ // Custom version with function merge support
+ export const defuFn = createDefu((object, key, currentValue) => {
+-  if (object[key] !== undefined && typeof currentValue === "function") {
++  if (typeof currentValue === "function") {
+     object[key] = currentValue(object[key]);
+     return true;
+   }

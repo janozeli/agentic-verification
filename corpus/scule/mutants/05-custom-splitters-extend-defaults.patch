@@ -1,0 +1,14 @@
+# Custom splitters passed to splitByCase are added to the default ['-', '_', '/', '.'] instead of replacing them, so splitByCase("foo-bar_baz", ["_"]) also splits on "-".
+diff --git a/src/index.ts b/src/index.ts
+index f1983fd..321dea4 100644
+--- a/src/index.ts
++++ b/src/index.ts
+@@ -28,7 +28,7 @@ export function splitByCase<
+   T extends string,
+   Separator extends readonly string[],
+ >(str: T, separators?: Separator) {
+-  const splitters = separators ?? STR_SPLITTERS;
++  const splitters = [...STR_SPLITTERS, ...(separators ?? [])];
+   const parts: string[] = [];
+ 
+   if (!str || typeof str !== "string") {

@@ -1,0 +1,18 @@
+# Simplifies the plain-object check to "prototype is Object.prototype", so null-prototype objects (Object.create(null), module namespaces) and cross-realm objects are no longer merged as objects or accepted as defaults.
+diff --git a/src/_utils.ts b/src/_utils.ts
+index 41e29b9..aa223d3 100644
+--- a/src/_utils.ts
++++ b/src/_utils.ts
+@@ -6,11 +6,7 @@ export function isPlainObject(value: unknown): boolean {
+   }
+   const prototype = Object.getPrototypeOf(value);
+ 
+-  if (
+-    prototype !== null &&
+-    prototype !== Object.prototype &&
+-    Object.getPrototypeOf(prototype) !== null
+-  ) {
++  if (prototype !== Object.prototype) {
+     return false;
+   }
+ 
