@@ -39,6 +39,7 @@ jobs:
           mise run model
           git diff --exit-code examples/coupon/spec/model.cjs
       - run: mise run study
+      - run: mise run study:triangulate
       - name: Results match the committed ones
         # The corpus runs Stryker on third-party suites, where a slow mutant can
         # land as Killed on one machine and Timeout on another; it is uploaded

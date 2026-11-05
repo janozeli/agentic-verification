@@ -342,6 +342,29 @@ Without a formal core, the only sound cut is a duplicate case. With a full
 model, every case is derivable, and what is left to test is that the code
 matches the model.
 
+### 11. A second implementation found a gap in the first
+
+The pruning verdict is written down in
+[triangulation/SPEC.md](triangulation/SPEC.md) and implemented twice: the
+tool (TypeScript) and an implementation in Python written by an agent that
+saw only the spec and the inputs. `mise run study:triangulate` compares
+them on all 9 report pairs.
+
+The first run disagreed on 7 of 9. Two causes, neither in the kept set:
+
+- Order. The spec said `kept` is listed in the order the greedy choice
+  made it; the tool lists it in test order. The sets were equal. The spec
+  now says test order.
+- A spec ambiguity the second author named: mutants with status
+  `NoCoverage` were in neither `killed` nor `survived`. The tool silently
+  left them out of its "no test rejects" list, so the scule and defu human
+  reports each hid one undetected mutant. The tool now lists them (test
+  first), and both sides agree on all 9.
+
+Agreement of two implementations is evidence that the verdict computes the
+definition, not that the definition is the right one; both share the spec,
+the inputs and Stryker's `killedBy`.
+
 ## What this says about the ideas
 
 - **Tests as predicates over implementations** works as a basis: vacuity,

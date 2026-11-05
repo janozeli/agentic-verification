@@ -108,7 +108,7 @@ export function analyze(report: Report, semantic: NamedMutant[] = []): Analysis 
     kept: tests.filter((t) => keptIds.has(t.id)),
     vacuous: tests.filter((t) => kills.get(t.id)!.size === 0),
     redundant: tests.filter((t) => !keptIds.has(t.id) && kills.get(t.id)!.size > 0),
-    survived: mutants.filter((m) => m.status === "Survived"),
+    survived: mutants.filter((m) => m.status === "Survived" || m.status === "NoCoverage"),
     killedCount: mutants.filter((m) => m.status === "Killed").length,
   };
 }

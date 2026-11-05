@@ -74,6 +74,10 @@ python3 experiments/derivation/lean_cases.py
 cd examples/coupon/lean && "$HOME/.elan/bin/lake" env lean Cases.lean
 """
 
+[tasks."study:triangulate"]
+description = "Check two independent implementations of the pruning verdict agree on every report"
+run = "./triangulation/check.sh"
+
 [tasks.study]
 description = "Run the whole study"
 depends = ["study:coupon", "study:generators", "study:boundaries", "study:derivation", "study:redemption", "study:corpus"]
